@@ -1,6 +1,9 @@
+from logging import disable
 from kivy.clock import Clock
+from kivy.core.text import LabelBase
 from kivy.uix.behaviors.button import ButtonBehavior
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.relativelayout import RelativeLayout
 
 from defines import *
 import globals as g
@@ -13,6 +16,9 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.graphics import Color, Rectangle, Line
+
+
+''' CELL GRID '''
 
 class Cell(ButtonBehavior, Label):
 
@@ -47,7 +53,7 @@ class Cell(ButtonBehavior, Label):
                 Color(C_BRIGHT_DARK[0], C_BRIGHT_DARK[1], C_BRIGHT_DARK[2], C_BRIGHT_DARK[3])
             elif self.game.get_type(self.grid_x, self.grid_y) == TYPE_SUM:
                 self.color = C_DARK
-                Color(C_RED[0], C_RED[1], C_RED[2], C_RED[3])
+                Color(C_BRIGHT[0], C_BRIGHT[1], C_BRIGHT[2], C_BRIGHT[3])
             Rectangle(pos=self.pos, size=self.size)
         
         # Update text
@@ -115,6 +121,10 @@ class CellGrid(GridLayout):
         # Later used for animation
         for c in self.cells:
             c.mainloop(delta)
+
+
+
+''' VALUE SELECTION '''
 
 class ValueSelector(ButtonBehavior, Label):
     def __init__(self, selector_grid, game: Game, value, **kwargs):
@@ -203,6 +213,55 @@ class ValueSelectorGrid(GridLayout):
             vs.mainloop(delta)
             
 
+
+''' GAME SOLVED OVERLAY WIDGETS '''
+
+class ButtonMenu(ButtonBehavior, Label):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+class ButtonNextLevel(ButtonBehavior, Label):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+class SolvedOverlay(FloatLayout):
+
+    # This layout is created when the game got solved
+    # This Layout contains a few differnt buttons and labels
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # Text label at the top
+        self.main_text = Label(
+            size_hint=(None, None),
+            size=(self.size[0], self.size[1] * .2),
+            pos_hint={},
+            pos=(self.pos[0], self.pos[1] + self.size[1] * .8),
+            text="Solved",
+            font_size=(80 * g.scale),
+            color=C_BRIGHT
+        )
+
+        # TODO Back to menu button
+        # TODO Play next Level
+
+        self.add_widget(self.main_text)
+
+        self.update_visuals()
+
+    def update_visuals(self):
+        self.canvas.before.clear()
+        with self.canvas.before:
+            Color(0, 0, 0, 1)
+            Rectangle(pos=self.pos, size=self.size)
+
+
+
+''' GAME SCREEN OBJECT '''
+
 class ScrGame(Screen):
 
     def __init__(self, **kwargs):
@@ -210,6 +269,8 @@ class ScrGame(Screen):
         
         # Handles the game logic
         self.game = Game()
+
+        self.solved_overlay: SolvedOverlay = None
 
         self.float_layout = FloatLayout()
         self.add_widget(self.float_layout)
@@ -221,7 +282,7 @@ class ScrGame(Screen):
             pos_hint={'x': 0, 'y': .05}
         )
         self.float_layout.add_widget(self.value_selector_grid)
-
+        
     
     def on_pre_enter(self):
         # Initialise the game logic
@@ -247,6 +308,9 @@ class ScrGame(Screen):
         # Remove the cell grid bc it gets newly created on reenter
         self.remove_widget(self.cell_grid)
 
+        # Remove the solved overlay
+        self.remove_widget(self.solved_overlay)
+
         # Unschedule mainloop
         Clock.unschedule(self.mainloop_schedule)
 
@@ -255,3 +319,14 @@ class ScrGame(Screen):
         # Call the mainloop on cells and selectors
         self.cell_grid.mainloop(delta)
         self.value_selector_grid.mainloop(delta)
+
+        # Check if the game is solved and then show the solved overlay
+        if self.game.check_solved():
+            self.solved_overlay = SolvedOverlay(
+                size_hint=(None, None),
+                size=(Window.width * .8, Window.width * 1.0),
+                pos_hint={},
+                pos=(Window.width * .1, Window.height * .3)
+            )
+            print(self.solved_overlay.size, '  ', self.solved_overlay.pos)
+            self.float_layout.add_widget(self.solved_overlay)

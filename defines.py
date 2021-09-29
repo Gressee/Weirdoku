@@ -1,6 +1,6 @@
 C_DARK          = (.09, .10, .13, 1.00)
 C_BRIGHT        = (.95, .95, .95, 1.00)
-C_BRIGHT_DARK   = (.7, .7, .7, 1.00)
+C_BRIGHT_DARK   = (.5, .5, .5, 1.00)
 C_RED           = (.60, .10, .10, 1.0)
 
 # Screen names

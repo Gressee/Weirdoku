@@ -1,3 +1,4 @@
+import re
 from defines import *
 from utils import clamp
 import numpy as np
@@ -107,6 +108,12 @@ class Game:
                     
                     grid_values[y][x] = s
         
+        # Remove the normal cells
+        for x in range(grid_size[0]):
+            for y in range(grid_size[1]):
+                if grid_types[y][x] == TYPE_NORMAL:
+                    grid_values[y][x] = NO_VALUE
+
         # Make this gris into a dict
         d = {}
         d[K_GRID_SIZE] = grid_size
@@ -123,6 +130,32 @@ class Game:
                 )
 
         return d
+
+
+    ''' CHECK IF ITS SOLVED '''
+
+    def check_solved(self) -> bool:
+        for x in range(self.grid_size[0]):
+            for y in range(self.grid_size[1]):
+
+                # Check if this cell even has a value
+                if self.get_value(x, y) == NO_VALUE:
+                    return False
+
+                # Check the sum square
+                if self.get_type(x, y) == TYPE_SUM:
+                    s = 0
+                    for check_x in range(x-1, x+2):
+                        for check_y in range(y-1, y+2):
+                            if self.in_bound(check_x, check_y):
+                                if not self.get_value(check_x, check_y) == NO_VALUE and not self.get_type(check_x, check_y) == TYPE_SUM:
+                                    s += self.get_value(check_x, check_y)
+                    print(f'{x}:{y} = {s}')
+                    if not s == self.get_value(x, y):
+                        return False
+                
+
+        return True
 
 
     ''' METHODS USED BY WIDGETS '''
@@ -163,5 +196,3 @@ class Game:
         else:
             return True
     
-    def check_solved(self) -> bool:
-        pass

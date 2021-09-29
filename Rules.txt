@@ -1,0 +1,31 @@
+
+Rules are used to check if a game has a clearly defined solution
+(there is only one and at no point in solving you have to guess a number).
+
+
+
+--------------------
+#### TODO RULES ####
+--------------------
+
+
+## OneCellLeft ##
+-----------------
+If only one cell around a sum cell is not yet filles
+the value should be easy to calculate
+
+
+## OnlyMinValuePossible ##
+--------------------------
+MIN_GRID_VALUE : minimum value a cell can have
+If in a sum cell
+    target_sum - current_sum = num_free_cells * MIN_GRID_VALUE
+is correct thn all free cells have to be MIN_GRID_VALUE
+
+
+
+
+
+--------------------------
+#### IMPLEMENTD RULES ####
+--------------------------
